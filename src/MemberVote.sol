@@ -66,7 +66,7 @@ contract MemberVote {
      * @param option Option for which the voter is voting (0 for Option A, 1 for Option B)
      * @dev This function checks if the voting process is active, if the voter has already voted, and if the option is valid. If any of these conditions are not met, it reverts with an appropriate error. If the vote is successfully cast, it updates the vote count for the selected option and marks the voter as having voted.
      */
-    function vote(uint8 option) public {
+    function vote(uint256 option) public {
         address voter = msg.sender;
         if (s_workFlowStation != WorkFlowStation.Voting) {
             revert MemberVote__WrongWorkflowStation();
