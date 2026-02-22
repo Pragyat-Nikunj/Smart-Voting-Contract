@@ -28,9 +28,9 @@ contract MemberVote {
     WorkFlowStation private s_workFlowStation;
     address[] private voters;
 
-    constructor() {
+    constructor(uint256 entryFee) {
         i_owner = msg.sender;
-        i_entryFee = 0.01 ether;
+        i_entryFee = entryFee;
         s_electionId = 1;
         s_workFlowStation = WorkFlowStation.Registering;
     }

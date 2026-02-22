@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 import {Test} from "forge-std/Test.sol";
 import {MemberVote} from "src/MemberVote.sol";
 import {DeployMemberVote} from "script/MemberVote.s.sol";
+import {HelperConfig} from "script/HelperConfig.s.sol";
 
 contract MemberVoteTest is Test {
     address public USER1 = makeAddr("user");
@@ -16,10 +17,11 @@ contract MemberVoteTest is Test {
     uint256 public constant STARTING_OPTION_B_VOTES = 0;
     uint256 public constant STARTING_PLAYER_BALANCE = 1 ether;
     MemberVote public memberVote;
+    HelperConfig public helperConfig;
 
     function setUp() external {
         DeployMemberVote deployer = new DeployMemberVote();
-        memberVote = deployer.run();
+        (memberVote, helperConfig) = deployer.run();
         vm.deal(USER1, STARTING_PLAYER_BALANCE);
         vm.deal(USER2, STARTING_PLAYER_BALANCE);
         vm.deal(USER3, STARTING_PLAYER_BALANCE);
@@ -73,21 +75,23 @@ contract MemberVoteTest is Test {
     // Vote Function Tests //
     /////////////////////////
     function testIfVoterCanVote() public {
+        (uint256 entryFee) = helperConfig.activeNetworkConfig();
         vm.prank(msg.sender);
         memberVote.startVote();
         vm.prank(USER1);
-        memberVote.vote{value: 0.01 ether}(OPTION_A);
+        memberVote.vote{value: entryFee}(OPTION_A);
         assertEq(memberVote.getOptionAVotes(), STARTING_OPTION_A_VOTES + 1);
-        memberVote.vote{value: 0.01 ether}(OPTION_B);
+        memberVote.vote{value: entryFee}(OPTION_B);
         assertEq(memberVote.getOptionBVotes(), STARTING_OPTION_B_VOTES + 1);
     }
 
     function testIfVoterCanVoteInvalidOption() public {
+        (uint256 entryFee) = helperConfig.activeNetworkConfig();
         vm.prank(msg.sender);
         memberVote.startVote();
         vm.prank(USER1);
         vm.expectRevert(MemberVote.MemberVote__InvalidOption.selector);
-        memberVote.vote{value: 0.01 ether}(2);
+        memberVote.vote{value: entryFee}(2);
     }
 
     function testIfVoterCanVoteWithoutPayingEntryFee() public {
@@ -99,19 +103,21 @@ contract MemberVoteTest is Test {
     }
 
     function testIfVoterCanVoteMoreThanOnce() public {
+        (uint256 entryFee) = helperConfig.activeNetworkConfig();
         vm.prank(msg.sender);
         memberVote.startVote();
         vm.prank(USER1);
-        memberVote.vote{value: 0.01 ether}(OPTION_A);
+        memberVote.vote{value: entryFee}(OPTION_A);
         vm.prank(USER1);
         vm.expectRevert(MemberVote.MemberVote__AlreadyVoted.selector);
-        memberVote.vote{value: 0.01 ether}(OPTION_B);
+        memberVote.vote{value: entryFee}(OPTION_B);
     }
 
     function testIfVoterCanVoteWhenVotingNotStarted() public {
+        (uint256 entryFee) = helperConfig.activeNetworkConfig();
         vm.prank(USER1);
         vm.expectRevert(MemberVote.MemberVote__WrongWorkflowStation.selector);
-        memberVote.vote{value: 0.01 ether}(OPTION_A);
+        memberVote.vote{value: entryFee}(OPTION_A);
     }
 
     function testIfElectionIdIncrementsAfterReset() public {

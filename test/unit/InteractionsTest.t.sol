@@ -5,6 +5,7 @@ import {Test} from "forge-std/Test.sol";
 import {MemberVote} from "src/MemberVote.sol";
 import {DeployMemberVote} from "script/MemberVote.s.sol";
 import {StartVote, ResetVotes, Vote} from "script/Interactions.s.sol";
+import {HelperConfig} from "script/HelperConfig.s.sol";
 
 contract InteractionsTest is Test {
     address public USER1 = makeAddr("user");
@@ -17,10 +18,11 @@ contract InteractionsTest is Test {
     uint256 public constant STARTING_OPTION_B_VOTES = 0;
     uint256 public constant STARTING_PLAYER_BALANCE = 1 ether;
     MemberVote public memberVote;
+    HelperConfig public helperConfig;
 
     function setUp() external {
         DeployMemberVote deployer = new DeployMemberVote();
-        memberVote = deployer.run();
+        (memberVote, helperConfig) = deployer.run();
         vm.deal(USER1, STARTING_PLAYER_BALANCE);
         vm.deal(USER2, STARTING_PLAYER_BALANCE);
         vm.deal(USER3, STARTING_PLAYER_BALANCE);
@@ -44,7 +46,8 @@ contract InteractionsTest is Test {
         StartVote startVoteScript = new StartVote();
         startVoteScript.startVote(address(memberVote));
         Vote voteScript = new Vote();
-        voteScript.vote{value: 0.01 ether}(address(memberVote), OPTION_A);
+        (uint256 entryFee) = helperConfig.activeNetworkConfig();
+        voteScript.vote{value: entryFee}(address(memberVote), OPTION_A);
         assertEq(memberVote.getOptionAVotes(), STARTING_OPTION_A_VOTES + 1);
     }
 }
