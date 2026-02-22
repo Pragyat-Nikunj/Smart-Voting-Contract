@@ -23,7 +23,7 @@ contract ResetVotes is Script {
         address mostRecentDeployed = DevOpsTools.get_most_recent_deployment("MemberVote", block.chainid);
         resetVote(mostRecentDeployed);
     }
-    
+
     function resetVote(address _contractAddress) public {
         vm.startBroadcast();
         MemberVote(_contractAddress).resetVotes();
@@ -37,9 +37,9 @@ contract Vote is Script {
         vote(mostRecentDeployed, 1);
     }
 
-    function vote(address _contractAddress, uint256 _option) public {
+    function vote(address _contractAddress, uint256 _option) public payable {
         vm.startBroadcast();
-        MemberVote(_contractAddress).vote(_option);
+        MemberVote(_contractAddress).vote{value: msg.value}(_option);
         vm.stopBroadcast();
     }
 }

@@ -11,6 +11,7 @@ contract MemberVote {
     error MemberVote__AlreadyVoted();
     error MemberVote__WrongWorkflowStation();
     error MemberVote__InvalidOption();
+    error MemberVote__InvalidEntryFee();
 
     enum WorkFlowStation {
         Registering,
@@ -18,16 +19,18 @@ contract MemberVote {
         Resetting
     }
 
-    address private immutable owner;
+    address private immutable i_owner;
     uint256 private s_electionId;
     uint256 private optionAVotes;
     uint256 private optionBVotes;
-    mapping (address => uint256) private s_addressToVoted; 
+    uint256 private immutable i_entryFee;
+    mapping(address => uint256) private s_addressToVoted;
     WorkFlowStation private s_workFlowStation;
     address[] private voters;
 
     constructor() {
-        owner = msg.sender;
+        i_owner = msg.sender;
+        i_entryFee = 0.01 ether;
         s_electionId = 1;
         s_workFlowStation = WorkFlowStation.Registering;
     }
@@ -36,7 +39,7 @@ contract MemberVote {
      * @dev This modifier checks if the caller of a function is the owner of the contract. If the caller is not the owner, it reverts with an error. This is used to restrict certain functions to be only callable by the owner.
      */
     modifier onlyOwner() {
-        if (msg.sender != owner) {
+        if (msg.sender != i_owner) {
             revert MemberVote__NotOwner();
         }
         _;
@@ -45,15 +48,15 @@ contract MemberVote {
     /**
      * @notice This function allows the owner to start the voting process by changing the workflow station to Voting. It can only be called by the owner and will revert if called at the wrong workflow station.
      */
-    function startVote() onlyOwner public {
+    function startVote() public onlyOwner {
         s_workFlowStation = WorkFlowStation.Voting;
     }
-    
-    /** 
+
+    /**
      * @notice This function allows the owner to reset the votes and return to the registering phase. It resets the vote counts for both options and marks all voters as not having voted. It can only be called by the owner and will revert if called at the wrong workflow station.
      * @dev This function is used to reset the voting process, allowing for a new round of voting to take place. It clears the vote counts and resets the voting status of all voters, effectively starting the process over from the registering phase.
      */
-    function resetVotes() onlyOwner public {
+    function resetVotes() public onlyOwner {
         s_workFlowStation = WorkFlowStation.Resetting;
         optionAVotes = 0;
         optionBVotes = 0;
@@ -66,8 +69,11 @@ contract MemberVote {
      * @param option Option for which the voter is voting (0 for Option A, 1 for Option B)
      * @dev This function checks if the voting process is active, if the voter has already voted, and if the option is valid. If any of these conditions are not met, it reverts with an appropriate error. If the vote is successfully cast, it updates the vote count for the selected option and marks the voter as having voted.
      */
-    function vote(uint256 option) public {
+    function vote(uint256 option) public payable {
         address voter = msg.sender;
+        if (msg.value < i_entryFee) {
+            revert MemberVote__InvalidEntryFee();
+        }
         if (s_workFlowStation != WorkFlowStation.Voting) {
             revert MemberVote__WrongWorkflowStation();
         }
@@ -76,7 +82,7 @@ contract MemberVote {
             revert MemberVote__AlreadyVoted();
         }
 
-        if (option != 0 && option != 1) { 
+        if (option != 0 && option != 1) {
             revert MemberVote__InvalidOption();
         }
         s_addressToVoted[voter] = s_electionId;
