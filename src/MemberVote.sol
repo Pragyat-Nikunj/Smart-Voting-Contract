@@ -57,6 +57,9 @@ contract MemberVote {
      * @dev This function is used to reset the voting process, allowing for a new round of voting to take place. It clears the vote counts and resets the voting status of all voters, effectively starting the process over from the registering phase.
      */
     function resetVotes() public onlyOwner {
+        if (s_workFlowStation != WorkFlowStation.Voting) {
+            revert MemberVote__WrongWorkflowStation();
+        }
         s_workFlowStation = WorkFlowStation.Resetting;
         optionAVotes = 0;
         optionBVotes = 0;
