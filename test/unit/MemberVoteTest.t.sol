@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {MemberVote} from "src/MemberVote.sol";
 import {DeployMemberVote} from "script/MemberVote.s.sol";
 
@@ -114,6 +114,16 @@ contract MemberVoteTest is Test {
         memberVote.vote{value: 0.01 ether}(OPTION_A);
     }
 
+    function testIfElectionIdIncrementsAfterReset() public {
+        vm.prank(msg.sender);
+        memberVote.startVote();
+        uint256 electionIdBeforeReset = memberVote.getElectionId();
+        vm.prank(msg.sender);
+        memberVote.resetVotes();
+        uint256 electionIdAfterReset = memberVote.getElectionId();
+        assertEq(electionIdAfterReset, electionIdBeforeReset + 1);
+    }
+
     ////////////////////////////
     // Getter Function Tests //
     //////////////////////////
@@ -124,6 +134,7 @@ contract MemberVoteTest is Test {
         assertEq(memberVote.getOptionAVotes(), STARTING_OPTION_A_VOTES);
         assertEq(memberVote.getOptionBVotes(), STARTING_OPTION_B_VOTES);
         assertEq(uint256(memberVote.getWorkflowStation()), 1);
+        assertEq(memberVote.getElectionId(), STARTING_ELECTION_ID);
         address[] memory expectedVoters = new address[](0);
         assertEq(memberVote.getVoters().length, expectedVoters.length);
     }

@@ -109,6 +109,10 @@ contract MemberVote {
         return optionBVotes;
     }
 
+    function getElectionId() public view returns (uint256) {
+        return s_electionId;
+    }
+
     function getWorkflowStation() public view returns (WorkFlowStation) {
         return s_workFlowStation;
     }
