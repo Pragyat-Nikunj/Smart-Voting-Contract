@@ -130,6 +130,22 @@ contract MemberVoteTest is Test {
         assertEq(electionIdAfterReset, electionIdBeforeReset + 1);
     }
 
+    /////////////////////
+    // Withdraw Tests //
+    ///////////////////
+    function testIfOwnerCanWithdraw() public {
+        (uint256 entryFee) = helperConfig.activeNetworkConfig();
+        vm.prank(msg.sender);
+        memberVote.startVote();
+        vm.prank(USER1);
+        memberVote.vote{value: entryFee}(OPTION_A);
+        uint256 ownerBalanceBeforeWithdraw = address(msg.sender).balance;
+        vm.prank(msg.sender);
+        memberVote.withdraw();
+        uint256 ownerBalanceAfterWithdraw = address(msg.sender).balance;
+        assertEq(ownerBalanceAfterWithdraw, ownerBalanceBeforeWithdraw + entryFee);
+    }
+
     ////////////////////////////
     // Getter Function Tests //
     //////////////////////////
@@ -141,6 +157,7 @@ contract MemberVoteTest is Test {
         assertEq(memberVote.getOptionBVotes(), STARTING_OPTION_B_VOTES);
         assertEq(uint256(memberVote.getWorkflowStation()), 1);
         assertEq(memberVote.getElectionId(), STARTING_ELECTION_ID);
+        assertEq(memberVote.getOwner(), msg.sender);
         address[] memory expectedVoters = new address[](0);
         assertEq(memberVote.getVoters().length, expectedVoters.length);
     }

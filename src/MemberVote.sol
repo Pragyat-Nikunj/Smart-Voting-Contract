@@ -12,6 +12,7 @@ contract MemberVote {
     error MemberVote__WrongWorkflowStation();
     error MemberVote__InvalidOption();
     error MemberVote__InvalidEntryFee();
+    error MemberVote__WithdrawFailed();
 
     enum WorkFlowStation {
         Registering,
@@ -100,6 +101,16 @@ contract MemberVote {
         }
     }
 
+    /**
+     * @notice This function allows the owner to withdraw the funds collected from the entry fees. It can only be called by the owner and will revert if the withdrawal fails.
+     */
+    function withdraw() public onlyOwner {
+        (bool success,) = i_owner.call{value: address(this).balance}("");
+        if (!success) {
+            revert MemberVote__WithdrawFailed();
+        }
+    }
+
     // Getters
     function getOptionAVotes() public view returns (uint256) {
         return optionAVotes;
@@ -111,6 +122,10 @@ contract MemberVote {
 
     function getElectionId() public view returns (uint256) {
         return s_electionId;
+    }
+
+    function getOwner() public view returns (address) {
+        return i_owner;
     }
 
     function getWorkflowStation() public view returns (WorkFlowStation) {
