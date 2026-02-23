@@ -1,66 +1,77 @@
-## Foundry
+# Smart Voting Contract
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A simple, audited-by-design voting smart contract suite built with Foundry. Minimal, production-oriented, and easy to extend.
 
-Foundry consists of:
+## Features
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- Pay-to-vote entry fee (configurable)
+- Owner-controlled workflow: Registering → Voting → Resetting
+- Prevent double-voting per election cycle
+- Reset votes and increment election id
+- Owner withdrawal of collected fees
 
-## Documentation
+## Quickstart
 
-https://book.getfoundry.sh/
+Requirements:
+- Foundry (forge, anvil, cast)
+- git
 
-## Usage
-
-### Build
-
-```shell
-$ forge build
+Install dependencies and build:
+```sh
+make install
+make build
 ```
 
-### Test
-
-```shell
-$ forge test
+Run tests:
+```sh
+make test
 ```
 
-### Format
-
-```shell
-$ forge fmt
+Deploy locally (anvil):
+```sh
+make deploy
 ```
 
-### Gas Snapshots
+Run scripts:
+- Start voting: `make start-vote` (calls [`StartVote.startVote`](script/Interactions.s.sol))
+- Reset votes: `make reset-vote` (calls [`ResetVotes.resetVote`](script/Interactions.s.sol))
+- Cast a vote: `make vote` (calls [`Vote.vote`](script/Interactions.s.sol))
 
-```shell
-$ forge snapshot
-```
 
-### Anvil
+## Tests
 
-```shell
-$ anvil
-```
+Unit tests:
+- [`test/unit/MemberVoteTest.t.sol`](test/unit/MemberVoteTest.t.sol)
+- [`test/unit/InteractionsTest.t.sol`](test/unit/InteractionsTest.t.sol)
 
-### Deploy
+Integration tests:
+- [`test/integration/MemberVoteTest.t.sol`](test/integration/MemberVoteTest.t.sol)
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+Tests demonstrate:
+- Workflow transitions (`startVote`, `resetVotes`)
+- Voting mechanics and entry fee checks (`vote`)
+- Election id increment and reset behavior
+- Owner withdrawal (`withdraw`)
 
-### Cast
+## Configuration
 
-```shell
-$ cast <subcommand>
-```
+Main config: [`foundry.toml`](foundry.toml) — file system permissions and project layout.
 
-### Help
+Make common changes to:
+- Entry fee via [`HelperConfig.activeNetworkConfig`](script/HelperConfig.s.sol)
+- Deployment args via [`Makefile`](Makefile)
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## Contributing
+
+1. Fork and create a feature branch
+2. Run `forge fmt --check` and `forge test -vvv`
+3. Open a PR with tests and a short description
+
+Relevant code locations:
+- Contract: [`MemberVote`](src/MemberVote.sol)
+- Scripts: [`script/MemberVote.s.sol`](script/MemberVote.s.sol), [`script/Interactions.s.sol`](script/Interactions.s.sol)
+- Tests: [`test/unit`](test/unit), [`test/integration`](test/integration)
+
+## License
+
+This project is MIT licensed — see [`LICENSE`](LICENSE).
