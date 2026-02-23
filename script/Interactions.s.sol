@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import {Script} from "forge-std/Script.sol";
 import {MemberVote} from "src/MemberVote.sol";
+import {HelperConfig} from "script/HelperConfig.s.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 
 contract StartVote is Script {
@@ -34,12 +35,15 @@ contract ResetVotes is Script {
 contract Vote is Script {
     function run() external {
         address mostRecentDeployed = DevOpsTools.get_most_recent_deployment("MemberVote", block.chainid);
-        vote(mostRecentDeployed, 1);
+        HelperConfig helperConfig = new HelperConfig();
+        (uint256 entryFee) = helperConfig.activeNetworkConfig();
+        uint256 option = vm.envOr("VOTE_OPTION", uint256(0));
+        vote(mostRecentDeployed, option, entryFee);
     }
 
-    function vote(address _contractAddress, uint256 _option) public payable {
+    function vote(address _contractAddress, uint256 _option, uint256 _value) public payable {
         vm.startBroadcast();
-        MemberVote(_contractAddress).vote{value: msg.value}(_option);
+        MemberVote(_contractAddress).vote{value: _value}(_option);
         vm.stopBroadcast();
     }
 }

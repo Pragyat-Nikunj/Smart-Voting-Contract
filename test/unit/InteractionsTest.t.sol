@@ -47,7 +47,7 @@ contract InteractionsTest is Test {
         startVoteScript.startVote(address(memberVote));
         Vote voteScript = new Vote();
         (uint256 entryFee) = helperConfig.activeNetworkConfig();
-        voteScript.vote{value: entryFee}(address(memberVote), OPTION_A);
+        voteScript.vote{value: entryFee}(address(memberVote), OPTION_A, entryFee);
         assertEq(memberVote.getOptionAVotes(), STARTING_OPTION_A_VOTES + 1);
     }
 }
