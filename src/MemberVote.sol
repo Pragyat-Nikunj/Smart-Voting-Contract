@@ -47,24 +47,24 @@ contract MemberVote {
     }
 
     /**
-     * @notice This function allows the owner to start the voting process by changing the workflow station to Voting. It can only be called by the owner and will revert if called at the wrong workflow station.
+     * @notice This function allows the owner to start the voting process by changing the workflow station to Voting. It can only be called by the owner and will revert if called at the wrong workflow station. It also resets the vote counts and the list of voters for the new election.
      */
     function startVote() public onlyOwner {
         s_workFlowStation = WorkFlowStation.Voting;
+        optionAVotes = 0;
+        optionBVotes = 0;
+        voters = new address[](0);
     }
 
     /**
-     * @notice This function allows the owner to reset the votes and return to the registering phase. It resets the vote counts for both options and marks all voters as not having voted. It can only be called by the owner and will revert if called at the wrong workflow station.
-     * @dev This function is used to reset the voting process, allowing for a new round of voting to take place. It clears the vote counts and resets the voting status of all voters, effectively starting the process over from the registering phase.
+     * @notice This function allows the owner to reset the votes and return to the registering phase. It can only be called by the owner and will revert if called at the wrong workflow station.
+     * @dev This function is used to reset the voting process, allowing for a new round of voting to take place.
      */
     function resetVotes() public onlyOwner {
         if (s_workFlowStation != WorkFlowStation.Voting) {
             revert MemberVote__WrongWorkflowStation();
         }
         s_workFlowStation = WorkFlowStation.Resetting;
-        optionAVotes = 0;
-        optionBVotes = 0;
-        voters = new address[](0);
         s_electionId++;
     }
 

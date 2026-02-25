@@ -27,23 +27,6 @@ contract MemberVoteTest is Test {
         vm.deal(USER3, STARTING_PLAYER_BALANCE);
     }
 
-    function testIfOptionsAreResetAfterElection() external {
-        (uint256 entryFee) = helperConfig.activeNetworkConfig();
-        vm.prank(msg.sender);
-        memberVote.startVote();
-        vm.prank(USER1);
-        memberVote.vote{value: entryFee}(OPTION_A);
-        vm.prank(USER2);
-        memberVote.vote{value: entryFee}(OPTION_B);
-        vm.prank(USER3);
-        memberVote.vote{value: entryFee}(OPTION_A);
-
-        vm.prank(msg.sender);
-        memberVote.resetVotes();
-        assertEq(memberVote.getOptionAVotes(), STARTING_OPTION_A_VOTES, "Option A votes should be reset to 0");
-        assertEq(memberVote.getOptionBVotes(), STARTING_OPTION_B_VOTES, "Option B votes should be reset to 0");
-    }
-
     function testIfVoterCanVoteAfterReset() external {
         (uint256 entryFee) = helperConfig.activeNetworkConfig();
         vm.prank(msg.sender);
